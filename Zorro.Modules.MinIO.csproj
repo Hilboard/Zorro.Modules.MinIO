@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	<TargetFramework>net8.0</TargetFramework>
+	<ImplicitUsings>enable</ImplicitUsings>
+	<Nullable>enable</Nullable>
+	<PackageId>Zorro.Modules.MinIO</PackageId>
+	<Version>0.0.1</Version>
+	<Authors>Artem</Authors>
+	<Authors>Hilboard</Authors>
+	<Description>MinIO module for Zorro</Description>
+	<RepositoryUrl>https://github.com/Hilboard/Zorro.Modules.MinIO</RepositoryUrl>
+	<PackageLicenseExpression>MIT</PackageLicenseExpression>
+	<IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Minio" Version="6.0.4" />
+    <PackageReference Include="Zorro" Version="0.0.1" />
+  </ItemGroup>
+
+    <ItemGroup>
+    	<Folder Include="Properties\" />
+		<Folder Include="Data\" />
+		<Folder Include="Modules\" />
+    	<Folder Include="Services\" />
+    </ItemGroup>
+</Project>
