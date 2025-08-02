@@ -5,7 +5,7 @@
 	<ImplicitUsings>enable</ImplicitUsings>
 	<Nullable>enable</Nullable>
 	<PackageId>Zorro.Modules.MinIO</PackageId>
-	<Version>0.0.1</Version>
+	<Version>0.1.0</Version>
 	<Authors>Artem</Authors>
 	<Authors>Hilboard</Authors>
 	<Description>MinIO module for Zorro</Description>
@@ -16,13 +16,7 @@
 
   <ItemGroup>
     <PackageReference Include="Minio" Version="6.0.4" />
-    <PackageReference Include="Zorro" Version="0.0.1" />
+    <PackageReference Include="Zorro" Version="0.1.6" />
   </ItemGroup>
 
-    <ItemGroup>
-    	<Folder Include="Properties\" />
-		<Folder Include="Data\" />
-		<Folder Include="Modules\" />
-    	<Folder Include="Services\" />
-    </ItemGroup>
 </Project>
