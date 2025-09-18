@@ -3,6 +3,8 @@ using Minio;
 using Minio.DataModel;
 using Minio.DataModel.Args;
 using Minio.Exceptions;
+using System.IO;
+using System.IO.Pipes;
 using static Zorro.Services.MinIOService;
 
 namespace Zorro.Data;
@@ -60,6 +62,39 @@ public class MinIORepository : BucketRepository<IMinioClient, Bucket, Item>
 
             var response = await client.PutObjectAsync(request).ConfigureAwait(false);
             return true;
+        }
+        catch
+        {
+            return false;
+            throw;
+        }
+    }
+
+    public override async Task<bool> UploadAsync(string streamUri, string path, string contentType)
+    {
+        try
+        {
+            using (var client = new HttpClient())
+            {
+                using (var stream = await client.GetStreamAsync(streamUri))
+                {
+                    using (var memoryStream = new MemoryStream())
+                    {
+                        await stream.CopyToAsync(memoryStream);
+                        memoryStream.Position = 0;
+
+                        var request = new PutObjectArgs()
+                            .WithBucket(bucket)
+                            .WithObject(path)
+                            .WithObjectSize(stream.Length)
+                            .WithStreamData(stream)
+                            .WithContentType(contentType);
+
+                        var response = await this.client.PutObjectAsync(request).ConfigureAwait(false);
+                        return true;
+                    }
+                }
+            }
         }
         catch
         {
