@@ -16,7 +16,7 @@
 
   <ItemGroup>
     <PackageReference Include="Minio" Version="6.0.4" />
-    <PackageReference Include="Zorro" Version="0.1.6" />
+    <PackageReference Include="Zorro" Version="0.1.8" />
   </ItemGroup>
 
 </Project>
