@@ -3,15 +3,13 @@ using Minio;
 using Minio.DataModel;
 using Minio.DataModel.Args;
 using Minio.Exceptions;
-using System.IO;
-using System.IO.Pipes;
 using static Zorro.Services.MinIOService;
 
 namespace Zorro.Data;
 
 public class MinIORepository : BucketRepository<IMinioClient, Bucket, Item>
 {
-    public MinIORepository(IMinioClient client, string defaultBucket) : base(client, defaultBucket) 
+    public MinIORepository(IMinioClient client, string defaultBucket) : base(client, defaultBucket)
     {
         //client.SetTraceOn();
 
@@ -49,15 +47,15 @@ public class MinIORepository : BucketRepository<IMinioClient, Bucket, Item>
         }
     }
 
-    public override async Task<bool> UploadAsync(Stream fileStream, string path, string contentType)
+    public override async Task<bool> UploadAsync(Stream stream, string path, long contentLength, string contentType)
     {
         try
         {
             var request = new PutObjectArgs()
                 .WithBucket(bucket)
                 .WithObject(path)
-                .WithObjectSize(fileStream.Length)
-                .WithStreamData(fileStream)
+                .WithObjectSize(contentLength)
+                .WithStreamData(stream)
                 .WithContentType(contentType);
 
             var response = await client.PutObjectAsync(request).ConfigureAwait(false);
@@ -70,30 +68,31 @@ public class MinIORepository : BucketRepository<IMinioClient, Bucket, Item>
         }
     }
 
-    public override async Task<bool> UploadAsync(string streamUri, string path, string contentType)
+    public override async Task<bool> UploadAsync(string streamUri, string path)
     {
         try
         {
-            using (var client = new HttpClient())
+            using (var httpClient = new HttpClient())
+            using (var httpResponse = await httpClient.GetAsync(streamUri, HttpCompletionOption.ResponseHeadersRead))
+            using (var stream = await httpResponse.Content.ReadAsStreamAsync())
             {
-                using (var stream = await client.GetStreamAsync(streamUri))
-                {
-                    using (var memoryStream = new MemoryStream())
-                    {
-                        await stream.CopyToAsync(memoryStream);
-                        memoryStream.Position = 0;
+                long? contentLength = httpResponse.Content.Headers.ContentLength;
+                var contentType = httpResponse.Content.Headers.ContentType;
 
-                        var request = new PutObjectArgs()
-                            .WithBucket(bucket)
-                            .WithObject(path)
-                            .WithObjectSize(stream.Length)
-                            .WithStreamData(stream)
-                            .WithContentType(contentType);
+                if (contentLength.HasValue is false)
+                    throw new Exception("Content length is not specified in response header");
+                if (contentType is null)
+                    throw new Exception("Content type is not specified in response header");
 
-                        var response = await this.client.PutObjectAsync(request).ConfigureAwait(false);
-                        return true;
-                    }
-                }
+                var request = new PutObjectArgs()
+                    .WithBucket(bucket)
+                    .WithObject(path)
+                    .WithObjectSize(contentLength.Value)
+                    .WithStreamData(stream)
+                    .WithContentType(contentType.ToString());
+
+                var response = await client.PutObjectAsync(request).ConfigureAwait(false);
+                return true;
             }
         }
         catch
